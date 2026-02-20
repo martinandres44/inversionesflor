@@ -227,13 +227,14 @@
                 if (Math.abs(dcP) < 1 && dcP !== 0) dcP = dcP * 100;
 
                 if (cat === CAT_FCI_USD) {
-                    cats.fciUsd.push({ n, q, p, dcV, dcP, sub: q * p });
+                    const pU = p / 1000;
+                    cats.fciUsd.push({ n, q, p: pU, dcV: dcV/1000, dcP, sub: q * pU });
                 } else if (cat === CAT_FCI_ARS) {
-                    // FCI ARS: el VCP en la sheet suele venir x1000 → dividir
-                    const pDisplay = p > 100 ? p / 1000 : p;
-                    cats.fciArs.push({ n, q, p: pDisplay, dcV: dcV/1000, dcP, sub: q * pDisplay });
+                    const pA = p / 1000;
+                    cats.fciArs.push({ n, q, p: pA, dcV: dcV/1000, dcP, sub: q * pA });
                 } else if (cat === CAT_BONOS) {
-                    cats.bonos.push({ n, q, p, dcV, dcP, sub: q * p });
+                    const pB = p / 1000;
+                    cats.bonos.push({ n, q, p: pB, dcV: dcV/1000, dcP, sub: q * pB });
                 } else if (cat === CAT_OTROS) {
                     cats.otros.push({ n, v: p }); // para OTROS usamos precio como monto
                 }
