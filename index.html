@@ -489,12 +489,12 @@
         const guEl = document.getElementById('gan-usd');
         guEl.innerText = `US$ ${fmtN(ganUsd)}`;
         guEl.className = `total-block-val gan ${ganUsd>=0?'pos':'neg'}`;
-        document.getElementById('gan-usd-pct').innerHTML = `<span class="${ganUsd>=0?'pos':'neg'}">${fmtN(ganUsdPct)}% desde costo</span>`;
+        document.getElementById('gan-usd-pct').innerHTML = `<span class="${ganUsd>=0?'pos':'neg'}">${fmtN(ganUsdPct)}%</span>`;
 
         const gaEl = document.getElementById('gan-ars');
         gaEl.innerText = `$ ${fmtN(ganArs)}`;
         gaEl.className = `total-block-val gan ${ganArs>=0?'pos':'neg'}`;
-        document.getElementById('gan-ars-pct').innerHTML = `<span class="${ganArs>=0?'pos':'neg'}">${fmtN(ganArsPct)}% desde costo</span>`;
+        document.getElementById('gan-ars-pct').innerHTML = `<span class="${ganArs>=0?'pos':'neg'}">${fmtN(ganArsPct)}%</span>`;
 
         // Pills
         document.getElementById('sum-fci-usd').innerHTML = `<span>US$ ${fmtN(fciUsdSub)}</span>`;
