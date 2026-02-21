@@ -28,11 +28,14 @@
         .header { background:linear-gradient(135deg,#16102a 0%,#0d0a1a 100%); border:1px solid #2e1f5e; border-radius:18px; padding:28px 24px 22px; margin-bottom:16px; position:relative; overflow:hidden; }
         .header::after { content:''; position:absolute; top:-40px; right:-40px; width:220px; height:220px; background:radial-gradient(circle,rgba(167,139,250,0.15) 0%,transparent 70%); pointer-events:none; }
         .header-label { font-size:0.7rem; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--accent); opacity:0.8; margin-bottom:14px; }
-        .totals-row { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:14px; }
+        .totals-row { display:grid; grid-template-columns:1fr 1fr; gap:16px 24px; margin-bottom:14px; }
         .total-block-label { font-size:0.65rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; }
         .total-block-label.usd { color:var(--usd-color); }
         .total-block-label.ars { color:var(--ars-color); }
+        .total-block-label.gan-usd { color:#a3e6c8; }
+        .total-block-label.gan-ars { color:#93c5fd; }
         .total-block-val { font-family:'DM Serif Display',Georgia,serif; font-size:clamp(1.6rem,5vw,2.6rem); font-weight:400; color:#fff; line-height:1; }
+        .total-block-val.gan { font-size:clamp(1.1rem,3.5vw,1.7rem); }
         .total-block-dc { font-family:'Space Mono',monospace; font-size:0.73rem; margin-top:5px; }
         .header-divider { height:1px; background:#1e1640; margin:14px 0; }
         .header-meta { display:flex; align-items:center; gap:12px; }
@@ -129,6 +132,16 @@
                 <div class="total-block-label ars">Total ARS</div>
                 <div class="total-block-val" id="total-ars">$ —</div>
                 <div class="total-block-dc" id="dc-ars">—</div>
+            </div>
+            <div class="total-block">
+                <div class="total-block-label gan-usd">Ganancia USD</div>
+                <div class="total-block-val gan" id="gan-usd">—</div>
+                <div class="total-block-dc" id="gan-usd-pct">—</div>
+            </div>
+            <div class="total-block">
+                <div class="total-block-label gan-ars">Ganancia ARS</div>
+                <div class="total-block-val gan" id="gan-ars">—</div>
+                <div class="total-block-dc" id="gan-ars-pct">—</div>
             </div>
         </div>
         <div class="header-divider"></div>
@@ -464,6 +477,24 @@
         const pctArs = totalArs ? (dcArs/totalArs*100) : 0;
         document.getElementById('dc-usd').innerHTML = `<span class="${dcUsd>=0?'pos':'neg'}">US$ ${fmtN(dcUsd)} (${fmtN(pctUsd)}%)</span>`;
         document.getElementById('dc-ars').innerHTML = `<span class="${dcArs>=0?'pos':'neg'}">$ ${fmtN(dcArs)} (${fmtN(pctArs)}%)</span>`;
+
+        // Ganancia acumulada total
+        const ganUsd = [...cats.fciUsd, ...cats.bonos].reduce((s,i) => i.costo ? s + (i.p - i.costo)*i.q : s, 0);
+        const ganArs = cats.fciArs.reduce((s,i) => i.costo ? s + (i.p - i.costo)*i.q : s, 0);
+        const costoUsd = [...cats.fciUsd, ...cats.bonos].reduce((s,i) => i.costo ? s + i.costo*i.q : s, 0);
+        const costoArs = cats.fciArs.reduce((s,i) => i.costo ? s + i.costo*i.q : s, 0);
+        const ganUsdPct = costoUsd ? (ganUsd/costoUsd*100) : 0;
+        const ganArsPct = costoArs ? (ganArs/costoArs*100) : 0;
+
+        const guEl = document.getElementById('gan-usd');
+        guEl.innerText = `US$ ${fmtN(ganUsd)}`;
+        guEl.className = `total-block-val gan ${ganUsd>=0?'pos':'neg'}`;
+        document.getElementById('gan-usd-pct').innerHTML = `<span class="${ganUsd>=0?'pos':'neg'}">${fmtN(ganUsdPct)}% desde costo</span>`;
+
+        const gaEl = document.getElementById('gan-ars');
+        gaEl.innerText = `$ ${fmtN(ganArs)}`;
+        gaEl.className = `total-block-val gan ${ganArs>=0?'pos':'neg'}`;
+        document.getElementById('gan-ars-pct').innerHTML = `<span class="${ganArs>=0?'pos':'neg'}">${fmtN(ganArsPct)}% desde costo</span>`;
 
         // Pills
         document.getElementById('sum-fci-usd').innerHTML = `<span>US$ ${fmtN(fciUsdSub)}</span>`;
