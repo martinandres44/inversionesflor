@@ -226,17 +226,21 @@
                 // Normalizar porcentaje (a veces viene como 0.0021, otras como 0.21)
                 if (Math.abs(dcP) < 1 && dcP !== 0) dcP = dcP * 100;
 
+                const costo = parseFloat(r[7]) || 0; // columna H = costo promedio
+
                 if (cat === CAT_FCI_USD) {
                     const pU = p / 1000;
-                    cats.fciUsd.push({ n, q, p: pU, dcV: dcV/1000, dcP, sub: q * pU });
+                    const costoU = costo / 1000;
+                    cats.fciUsd.push({ n, q, p: pU, dcV: dcV/1000, dcP, sub: q * pU, costo: costoU });
                 } else if (cat === CAT_FCI_ARS) {
                     const pA = p / 1000;
-                    cats.fciArs.push({ n, q, p: pA, dcV: dcV/1000, dcP, sub: q * pA });
+                    const costoA = costo / 1000;
+                    cats.fciArs.push({ n, q, p: pA, dcV: dcV/1000, dcP, sub: q * pA, costo: costoA });
                 } else if (cat === CAT_BONOS) {
-                    const pB = p / 1000;
-                    cats.bonos.push({ n, q, p: pB, dcV: dcV/1000, dcP, sub: q * pB });
+                    // AL30: precio directo, sin dividir
+                    cats.bonos.push({ n, q, p, dcV, dcP, sub: q * p, costo });
                 } else if (cat === CAT_OTROS) {
-                    cats.otros.push({ n, v: p }); // para OTROS usamos precio como monto
+                    cats.otros.push({ n, v: p });
                 }
             });
 
@@ -281,9 +285,15 @@
         const badge = isUsd ? `<span class="badge badge-usd">USD</span>` : `<span class="badge badge-ars">ARS</span>`;
         const dec   = isUsd ? 4 : 4;
 
-        let tSub = 0, tDc = 0;
+        let tSub = 0, tDc = 0, tGan = 0;
         const rows = data.map(i => {
             tSub += i.sub; tDc += i.dcV;
+            const gan = i.costo ? (i.p - i.costo) * i.q : null;
+            const ganPct = (i.costo && i.costo !== 0) ? ((i.p - i.costo) / i.costo * 100) : null;
+            if (gan !== null) tGan += gan;
+            const ganHtml = gan !== null
+                ? `<span class="${gan>=0?'pos':'neg'}">${fmtS(gan, sym+' ')} (${fmtPct(ganPct)})</span>`
+                : `<span style="color:var(--text-dim)">—</span>`;
             return `<tr>
                 <td data-label="Fondo">${i.n}</td>
                 <td data-label="Cuotas" class="mono"><span>${fmtN(i.q, 4)}</span></td>
@@ -291,6 +301,7 @@
                 <td data-label="Día ${sym}" class="mono ${i.dcV>=0?'pos':'neg'}"><span>${fmtS(i.dcV, sym+' ')}</span></td>
                 <td data-label="Día %" class="mono ${i.dcP>=0?'pos':'neg'}"><span>${fmtPct(i.dcP)}</span></td>
                 <td data-label="Total" class="mono" style="text-align:right"><span>${sym} ${fmtN(i.sub)}</span></td>
+                <td data-label="Ganancia" class="mono" style="text-align:right">${ganHtml}</td>
             </tr>`;
         }).join('');
 
@@ -309,6 +320,7 @@
                     <th>Fondo</th><th>Cuotas</th><th>VCP</th>
                     <th>Día ${sym}</th><th>Día %</th>
                     <th style="text-align:right">Total</th>
+                    <th style="text-align:right">Ganancia Acum.</th>
                 </tr></thead>
                 <tbody>${rows}</tbody>
                 <tfoot><tr>
@@ -316,18 +328,25 @@
                     <td class="mono ${tDc>=0?'pos':'neg'}">${sym} ${fmtN(tDc)}</td>
                     <td class="mono ${tDc>=0?'pos':'neg'}">${fmtPct(pct)}</td>
                     <td class="mono" style="text-align:right">${sym} ${fmtN(tSub)}</td>
+                    <td class="mono ${tGan>=0?'pos':'neg'}" style="text-align:right">${sym} ${fmtN(tGan)}</td>
                 </tr></tfoot>
             </table></div>
-            <div class="card-footer">Subtotal FCI ${currency}: ${sym} ${fmtN(tSub)}</div>
+            <div class="card-footer">Subtotal FCI ${currency}: ${sym} ${fmtN(tSub)} &nbsp;·&nbsp; Ganancia: <span class="${tGan>=0?'pos':'neg'}">${sym} ${fmtN(tGan)}</span></div>
         </div>`;
     }
 
     function buildBonosCard() {
         const data = cats.bonos;
         if (!data.length) return `<div class="empty-msg">Sin datos para Bonos USD</div>`;
-        let tSub = 0, tDc = 0;
+        let tSub = 0, tDc = 0, tGan = 0;
         const rows = data.map(i => {
             tSub += i.sub; tDc += i.dcV;
+            const gan = i.costo ? (i.p - i.costo) * i.q : null;
+            const ganPct = (i.costo && i.costo !== 0) ? ((i.p - i.costo) / i.costo * 100) : null;
+            if (gan !== null) tGan += gan;
+            const ganHtml = gan !== null
+                ? `<span class="${gan>=0?'pos':'neg'}">${fmtS(gan,'US$ ')} (${fmtPct(ganPct)})</span>`
+                : `<span style="color:var(--text-dim)">—</span>`;
             return `<tr>
                 <td data-label="Bono">${i.n}</td>
                 <td data-label="Cant" class="mono"><span>${fmtN(i.q, 3)}</span></td>
@@ -335,6 +354,7 @@
                 <td data-label="Día US$" class="mono ${i.dcV>=0?'pos':'neg'}"><span>${fmtS(i.dcV,'US$ ')}</span></td>
                 <td data-label="Día %" class="mono ${i.dcP>=0?'pos':'neg'}"><span>${fmtPct(i.dcP)}</span></td>
                 <td data-label="Total" class="mono" style="text-align:right"><span>US$ ${fmtN(i.sub)}</span></td>
+                <td data-label="Ganancia" class="mono" style="text-align:right">${ganHtml}</td>
             </tr>`;
         }).join('');
         const pct = tSub ? (tDc / tSub * 100) : 0;
@@ -346,16 +366,17 @@
                 </div>
             </div>
             <div class="table-wrap"><table>
-                <thead><tr><th>Bono</th><th>Cant</th><th>Precio</th><th>Día US$</th><th>Día %</th><th style="text-align:right">Total</th></tr></thead>
+                <thead><tr><th>Bono</th><th>Cant</th><th>Precio</th><th>Día US$</th><th>Día %</th><th style="text-align:right">Total</th><th style="text-align:right">Ganancia Acum.</th></tr></thead>
                 <tbody>${rows}</tbody>
                 <tfoot><tr>
                     <td colspan="3" style="text-align:right;color:var(--text-muted)">TOTAL DÍA</td>
                     <td class="mono ${tDc>=0?'pos':'neg'}">US$ ${fmtN(tDc)}</td>
                     <td class="mono ${tDc>=0?'pos':'neg'}">${fmtPct(pct)}</td>
                     <td class="mono" style="text-align:right">US$ ${fmtN(tSub)}</td>
+                    <td class="mono ${tGan>=0?'pos':'neg'}" style="text-align:right">US$ ${fmtN(tGan)}</td>
                 </tr></tfoot>
             </table></div>
-            <div class="card-footer">Subtotal Bonos USD: US$ ${fmtN(tSub)}</div>
+            <div class="card-footer">Subtotal Bonos USD: US$ ${fmtN(tSub)} &nbsp;·&nbsp; Ganancia: <span class="${tGan>=0?'pos':'neg'}">US$ ${fmtN(tGan)}</span></div>
         </div>`;
     }
 
