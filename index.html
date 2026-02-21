@@ -237,8 +237,10 @@
                     const costoA = costo / 1000;
                     cats.fciArs.push({ n, q, p: pA, dcV: dcV/1000, dcP, sub: q * pA, costo: costoA });
                 } else if (cat === CAT_BONOS) {
-                    // AL30: precio directo, sin dividir
-                    cats.bonos.push({ n, q, p, dcV, dcP, sub: q * p, costo });
+                    // AL30: dividir por 100
+                    const pB = p / 100;
+                    const costoB = costo / 100;
+                    cats.bonos.push({ n, q, p: pB, dcV: dcV/100, dcP, sub: q * pB, costo: costoB });
                 } else if (cat === CAT_OTROS) {
                     cats.otros.push({ n, v: p });
                 }
@@ -300,8 +302,8 @@
                 <td data-label="VCP" class="mono"><span>${sym} ${fmtN(i.p, dec)}</span></td>
                 <td data-label="Día ${sym}" class="mono ${i.dcV>=0?'pos':'neg'}"><span>${fmtS(i.dcV, sym+' ')}</span></td>
                 <td data-label="Día %" class="mono ${i.dcP>=0?'pos':'neg'}"><span>${fmtPct(i.dcP)}</span></td>
-                <td data-label="Total" class="mono" style="text-align:right"><span>${sym} ${fmtN(i.sub)}</span></td>
                 <td data-label="Ganancia" class="mono" style="text-align:right">${ganHtml}</td>
+                <td data-label="Total" class="mono" style="text-align:right"><span>${sym} ${fmtN(i.sub)}</span></td>
             </tr>`;
         }).join('');
 
@@ -319,16 +321,16 @@
                 <thead><tr>
                     <th>Fondo</th><th>Cuotas</th><th>VCP</th>
                     <th>Día ${sym}</th><th>Día %</th>
-                    <th style="text-align:right">Total</th>
                     <th style="text-align:right">Ganancia Acum.</th>
+                    <th style="text-align:right">Total</th>
                 </tr></thead>
                 <tbody>${rows}</tbody>
                 <tfoot><tr>
                     <td colspan="3" style="text-align:right;color:var(--text-muted)">TOTAL DÍA</td>
                     <td class="mono ${tDc>=0?'pos':'neg'}">${sym} ${fmtN(tDc)}</td>
                     <td class="mono ${tDc>=0?'pos':'neg'}">${fmtPct(pct)}</td>
-                    <td class="mono" style="text-align:right">${sym} ${fmtN(tSub)}</td>
                     <td class="mono ${tGan>=0?'pos':'neg'}" style="text-align:right">${sym} ${fmtN(tGan)}</td>
+                    <td class="mono" style="text-align:right">${sym} ${fmtN(tSub)}</td>
                 </tr></tfoot>
             </table></div>
             <div class="card-footer">Subtotal FCI ${currency}: ${sym} ${fmtN(tSub)} &nbsp;·&nbsp; Ganancia: <span class="${tGan>=0?'pos':'neg'}">${sym} ${fmtN(tGan)}</span></div>
@@ -353,8 +355,8 @@
                 <td data-label="Precio" class="mono"><span>US$ ${fmtN(i.p, 2)}</span></td>
                 <td data-label="Día US$" class="mono ${i.dcV>=0?'pos':'neg'}"><span>${fmtS(i.dcV,'US$ ')}</span></td>
                 <td data-label="Día %" class="mono ${i.dcP>=0?'pos':'neg'}"><span>${fmtPct(i.dcP)}</span></td>
-                <td data-label="Total" class="mono" style="text-align:right"><span>US$ ${fmtN(i.sub)}</span></td>
                 <td data-label="Ganancia" class="mono" style="text-align:right">${ganHtml}</td>
+                <td data-label="Total" class="mono" style="text-align:right"><span>US$ ${fmtN(i.sub)}</span></td>
             </tr>`;
         }).join('');
         const pct = tSub ? (tDc / tSub * 100) : 0;
@@ -366,14 +368,14 @@
                 </div>
             </div>
             <div class="table-wrap"><table>
-                <thead><tr><th>Bono</th><th>Cant</th><th>Precio</th><th>Día US$</th><th>Día %</th><th style="text-align:right">Total</th><th style="text-align:right">Ganancia Acum.</th></tr></thead>
+                <thead><tr><th>Bono</th><th>Cant</th><th>Precio</th><th>Día US$</th><th>Día %</th><th style="text-align:right">Ganancia Acum.</th><th style="text-align:right">Total</th></tr></thead>
                 <tbody>${rows}</tbody>
                 <tfoot><tr>
                     <td colspan="3" style="text-align:right;color:var(--text-muted)">TOTAL DÍA</td>
                     <td class="mono ${tDc>=0?'pos':'neg'}">US$ ${fmtN(tDc)}</td>
                     <td class="mono ${tDc>=0?'pos':'neg'}">${fmtPct(pct)}</td>
-                    <td class="mono" style="text-align:right">US$ ${fmtN(tSub)}</td>
                     <td class="mono ${tGan>=0?'pos':'neg'}" style="text-align:right">US$ ${fmtN(tGan)}</td>
+                    <td class="mono" style="text-align:right">US$ ${fmtN(tSub)}</td>
                 </tr></tfoot>
             </table></div>
             <div class="card-footer">Subtotal Bonos USD: US$ ${fmtN(tSub)} &nbsp;·&nbsp; Ganancia: <span class="${tGan>=0?'pos':'neg'}">US$ ${fmtN(tGan)}</span></div>
